@@ -33,14 +33,13 @@ class InvertedIndex {
     }
   }
 
-  def num_of_types(index: Int): Int = {
-    0
+  def num_of_types: Int = {
+    inverted.size
   }
 
-  def get_postingList(term: String): List[(Int, Int)] = {
-    Nil
+  def get_postingList(term: String): Option[List[Array[Int]]] = {
+    inverted.get(term)
   }
-
 }
 
 object RankedSearch {
@@ -51,9 +50,13 @@ object RankedSearch {
   def main(args: Array[String]): Unit = {
 
     println("Harambe!")
+    val reuters = new InvertedIndex
+    reuters.read("reuters-21578-index-snowball.txt")
+    println(reuters.num_of_types)
+
+    print(reuters.get_postingList("hillard"))
 
   }
-
 
   /**
     * Help function for correct usage
@@ -61,6 +64,16 @@ object RankedSearch {
   def help() = {
     println("Help function")
     sys.exit()
+  }
+
+  /**
+    * print method for Option
+   */
+  def print(result: Option[List[Array[Int]]]) = {
+    result match {
+      case Some(x) => x.foreach(entry => println(entry.deep.mkString(" ")))
+      case None => println("No such term!")
+    }
   }
 
 }
