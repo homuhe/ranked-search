@@ -1,5 +1,8 @@
 package com.ir
 
+import scala.collection.mutable
+import scala.io.Source
+
 /** Author:       Alexander Hartmann,
   *               Holger Muth-Hellebrandt
   *
@@ -13,8 +16,21 @@ package com.ir
   */
 class InvertedIndex {
 
-  def read(file: String): Unit = {
+  val inverted = mutable.HashMap[String, List[Array[Int]]]()
 
+  def read(file: String): Unit = {
+    val lines = Source.fromFile(file).getLines()
+
+    for (line <- lines) {
+      val term = line.split("\t")(0)
+      val posting = line.split("\t")(1)
+        .split("\\s+")
+        .map(element => element.toInt)
+        .sliding(2,2)
+        .toList
+
+      inverted += term -> posting
+    }
   }
 
   def num_of_types(index: Int): Int = {
