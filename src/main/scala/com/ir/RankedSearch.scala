@@ -1,5 +1,8 @@
 package com.ir
 
+import scala.collection.mutable
+import scala.io.Source
+
 /** Author:       Alexander Hartmann,
   *               Holger Muth-Hellebrandt
   *
@@ -13,18 +16,30 @@ package com.ir
   */
 class InvertedIndex {
 
+  val inverted = mutable.HashMap[String, List[Array[Int]]]()
+
   def read(file: String): Unit = {
+    val lines = Source.fromFile(file).getLines()
 
+    for (line <- lines) {
+      val term = line.split("\t")(0)
+      val posting = line.split("\t")(1)
+        .split("\\s+")
+        .map(element => element.toInt)
+        .sliding(2,2)
+        .toList
+
+      inverted += term -> posting
+    }
   }
 
-  def num_of_types(index: Int): Int = {
-    0
+  def num_of_types: Int = {
+    inverted.size
   }
 
-  def get_postingList(term: String): List[(Int, Int)] = {
-    Nil
+  def get_postingList(term: String): Option[List[Array[Int]]] = {
+    inverted.get(term)
   }
-
 }
 
 object RankedSearch {
@@ -35,9 +50,13 @@ object RankedSearch {
   def main(args: Array[String]): Unit = {
 
     println("Harambe!")
+    val reuters = new InvertedIndex
+    reuters.read("reuters-21578-index-snowball.txt")
+    println(reuters.num_of_types)
+
+    print(reuters.get_postingList("hillard"))
 
   }
-
 
   /**
     * Help function for correct usage
@@ -45,6 +64,16 @@ object RankedSearch {
   def help() = {
     println("Help function")
     sys.exit()
+  }
+
+  /**
+    * print method for Option
+   */
+  def print(result: Option[List[Array[Int]]]) = {
+    result match {
+      case Some(x) => x.foreach(entry => println(entry.deep.mkString(" ")))
+      case None => println("No such term!")
+    }
   }
 
 }
