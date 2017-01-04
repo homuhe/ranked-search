@@ -7,6 +7,26 @@ package com.ir
   * Description:  Processes query of user input on inverted indices file.
   */
 
+/**
+  * Assignment 3.1
+  * Class representing an inverted index with term frequencies
+  */
+class InvertedIndex {
+
+  def read(file: String): Unit = {
+
+  }
+
+  def num_of_types(index: Int): Int = {
+    0
+  }
+
+  def get_postingList(term: String): List[(Int, Int)] = {
+    Nil
+  }
+
+}
+
 object RankedSearch {
 
   /**
