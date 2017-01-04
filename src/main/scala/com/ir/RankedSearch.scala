@@ -37,8 +37,8 @@ class InvertedIndex {
     inverted.size
   }
 
-  def get_postingList(term: String): Option[List[Array[Int]]] = {
-    inverted.get(term)
+  def get_postingList(term: String): List[Array[Int]] = {
+    inverted(term)
   }
 }
 
@@ -69,11 +69,8 @@ object RankedSearch {
   /**
     * print method for Option
    */
-  def print(result: Option[List[Array[Int]]]) = {
-    result match {
-      case Some(x) => x.foreach(entry => println(entry.deep.mkString(" ")))
-      case None => println("No such term!")
-    }
+  def print(result: List[Array[Int]]) = {
+      result.foreach(entry => println(entry.deep.mkString(" ")))
   }
 
 }
