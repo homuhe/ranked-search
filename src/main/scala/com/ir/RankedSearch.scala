@@ -46,10 +46,22 @@ class InvertedIndex {
   * Assignment 3.2
   * Class for calculating IDF, cosine similarity & TF-IDF
   */
-class QueryProcessor {
+class QueryProcessor extends InvertedIndex {
 
-  def get_idf(term: String): Int = {
-    0
+  private val invertedIndex = inverted
+
+  def get_idf(term: String): Double = {
+    val map_values = invertedIndex.valuesIterator.toList.flatten
+    val docs = mutable.HashSet[Int]()
+
+    for (entry <- map_values) {
+      docs.add(entry(0))
+    }
+
+    val N = docs.size
+    val n_i = invertedIndex(term).size
+
+    math.log(N/n_i)
   }
 
   def get_cos(query: List[String], doc: List[String]): Int = {
@@ -70,11 +82,25 @@ object RankedSearch {
   def main(args: Array[String]): Unit = {
 
     println("Harambe!")
-    val reuters = new InvertedIndex
-    reuters.read("reuters-21578-index-snowball.txt")
-    println(reuters.num_of_types)
+    //val reuters = new InvertedIndex
 
-    print(reuters.get_postingList("hillard"))
+    //reuters.read("reuters-21578-index-snowball.txt")
+    //println(reuters.num_of_types)
+    //print(reuters.get_postingList("hillard"))
+
+
+
+
+    //use QueryProcessor same as InvertedIndex Class (as it is extended)
+    val r = new QueryProcessor
+
+    //3.1
+    r.read("reuters-21578-index-snowball.txt")
+    println(r.num_of_types)
+    print(r.get_postingList("hillard"))
+
+    //3.2
+    println(r.get_idf("sugar"))
 
   }
 
