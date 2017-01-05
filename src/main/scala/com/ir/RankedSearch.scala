@@ -42,6 +42,26 @@ class InvertedIndex {
   }
 }
 
+/**
+  * Assignment 3.2
+  * Class for calculating IDF, cosine similarity & TF-IDF
+  */
+class QueryProcessor {
+
+  def get_idf(term: String): Int = {
+    0
+  }
+
+  def get_cos(query: List[String], doc: List[String]): Int = {
+   0
+  }
+
+  def tfidf_vector(query: List[String], doc: List[String]): List[Int] = {
+    Nil
+  }
+}
+
+
 object RankedSearch {
 
   /**
