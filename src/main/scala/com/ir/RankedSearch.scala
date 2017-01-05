@@ -96,11 +96,12 @@ object RankedSearch {
 
     //3.1
     r.read("reuters-21578-index-snowball.txt")
-    println(r.num_of_types)
-    print(r.get_postingList("hillard"))
+    println(s"Number of terms: ${r.num_of_types}")
+    print(s"Posting list of 'hillard': ")
+    print_array(r.get_postingList("hillard"))
 
     //3.2
-    println(r.get_idf("sugar"))
+    println(s"IDF-Score of 'sugar': ${r.get_idf("sugar")}")
 
   }
 
@@ -115,8 +116,9 @@ object RankedSearch {
   /**
     * print method for Option
    */
-  def print(result: List[Array[Int]]) = {
-      result.foreach(entry => println(entry.deep.mkString(" ")))
+  def print_array(result: List[Array[Int]]) = {
+    result.foreach(entry => print(entry.deep.mkString(" ") + " "))
+    println
   }
 
 }
