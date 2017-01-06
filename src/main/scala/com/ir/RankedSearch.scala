@@ -24,10 +24,10 @@ class InvertedIndex {
     for (line <- lines) {
       val term = line.split("\t")(0)
       val posting = line.split("\t")(1)
-        .split("\\s+")
-        .map(element => element.toInt)
-        .sliding(2,2)
-        .toList
+                        .split("\\s+")
+                        .map(element => element.toInt)
+                        .sliding(2,2)
+                        .toList
 
       inverted += term -> posting
     }
@@ -81,15 +81,11 @@ object RankedSearch {
     */
   def main(args: Array[String]): Unit = {
 
-    println("Harambe!")
     //val reuters = new InvertedIndex
 
     //reuters.read("reuters-21578-index-snowball.txt")
     //println(reuters.num_of_types)
     //print(reuters.get_postingList("hillard"))
-
-
-
 
     //use QueryProcessor same as InvertedIndex Class (as it is extended)
     val r = new QueryProcessor
