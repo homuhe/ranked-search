@@ -64,8 +64,17 @@ class QueryProcessor extends InvertedIndex {
     math.log(N/n_i)
   }
 
-  def get_cos(query: List[String], doc: List[String]): Int = {
-   0
+  def get_cos(query: List[String]): Int = {
+
+    val query_vector: List[Double] = Nil
+
+    for (key <- invertedIndex.keySet) {
+      if (query.contains(key)) {
+        get_idf(key) :: query_vector
+      }
+      else 0.0 :: query_vector
+    }
+    0
   }
 
   def tfidf_vector(query: List[String], doc: List[String]): List[Int] = {
