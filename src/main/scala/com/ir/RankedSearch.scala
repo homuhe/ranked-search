@@ -24,10 +24,10 @@ class InvertedIndex {
     for (line <- lines) {
       val term = line.split("\t")(0)
       val posting = line.split("\t")(1)
-        .split("\\s+")
-        .map(element => element.toInt)
-        .sliding(2,2)
-        .toList
+                        .split("\\s+")
+                        .map(element => element.toInt)
+                        .sliding(2,2)
+                        .toList
 
       inverted += term -> posting
     }
@@ -64,8 +64,26 @@ class QueryProcessor extends InvertedIndex {
     math.log(N/n_i)
   }
 
-  def get_cos(query: List[String], doc: List[String]): Int = {
-   0
+  def get_cos(query: List[String]): Int = {
+
+    var query_vector: List[Double] = Nil
+
+    for (key <- invertedIndex.keySet) {
+      if (query.contains(key)) {
+        query_vector :+= get_idf(key)
+      }
+      else query_vector :+= 0.0
+    }
+
+    var query_docs: List[Int] = Nil
+    for (term <- query) {
+      println(term)
+      for (arr <- invertedIndex(term)) {//TODO exception handling!
+        query_docs :+= arr(0)
+      }
+    }
+    println(query_docs)
+    0
   }
 
   def tfidf_vector(query: List[String], doc: List[String]): List[Int] = {
@@ -81,15 +99,11 @@ object RankedSearch {
     */
   def main(args: Array[String]): Unit = {
 
-    println("Harambe!")
     //val reuters = new InvertedIndex
 
     //reuters.read("reuters-21578-index-snowball.txt")
     //println(reuters.num_of_types)
     //print(reuters.get_postingList("hillard"))
-
-
-
 
     //use QueryProcessor same as InvertedIndex Class (as it is extended)
     val r = new QueryProcessor
@@ -102,6 +116,7 @@ object RankedSearch {
 
     //3.2
     println(s"IDF-Score of 'sugar': ${r.get_idf("sugar")}")
+    println(r.get_cos("sugar sugar".split(" ").toList))
 
   }
 
