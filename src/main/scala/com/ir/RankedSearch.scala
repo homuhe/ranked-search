@@ -72,8 +72,12 @@ class QueryProcessor extends InvertedIndex {
       if (query.contains(key)) {
         query_vector :+= get_idf(key)
       }
-      else query_vector :+= 0.toFloat
     }
+
+    println()
+    print("query vector of ");println(query)
+    println(query_vector)
+    println()
 
     val query_docs = mutable.HashSet[Int]()
 
@@ -89,7 +93,8 @@ class QueryProcessor extends InvertedIndex {
     var doc_vectorList = Nil
     for (doc <- query_docs) {
       for (term <- invertedIndex.keySet) {
-        invertedIndex(term)//MAGIC
+        val postingList = invertedIndex(term) //TODO DELTE
+        postingList.filter(x => x == 0)//MAGIC!
       }
     }
     0
@@ -115,10 +120,13 @@ object RankedSearch {
     println(s"Number of terms: ${r.num_of_types}")
     print(s"Posting list of 'hillard': ")
     print_array(r.get_postingList("hillard"))
+    println()
+
 
     //3.2
     println(s"IDF-Score of 'sugar': ${r.get_idf("sugar")}")
-    println(r.get_cos("sugar sugar".split(" ").toList))
+    println(r.get_cos("sugar soviet".split(" ").toList))
+    println()
 
   }
 
