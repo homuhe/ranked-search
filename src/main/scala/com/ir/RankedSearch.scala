@@ -102,6 +102,7 @@ class QueryProcessor extends InvertedIndex {
       println(doc_vector)
     }
     doc_vectorList ::: doc_vector
+    //cosine calculation
     0
   }
 }
