@@ -90,18 +90,19 @@ class QueryProcessor extends InvertedIndex {
     println(query_docs)
 
     //create doc vectors
-    var doc_vectorList = Nil
-    for (doc <- query_docs) {
-      for (term <- invertedIndex.keySet) {
-        val postingList = invertedIndex(term) //TODO DELTE
-        postingList.filter(x => x == 0)//MAGIC!
-      }
-    }
-    0
-  }
+    val doc_vectorList = Nil
+    var doc_vector: List[Float] = Nil
 
-  def tfidf_vector(query: List[String], doc: List[String]): List[Int] = {
-    Nil
+    for (doc <- query_docs) {
+      doc_vector = Nil
+      for (term <- invertedIndex.keySet) {
+        val tf = invertedIndex(term).filter(arr => arr(0).equals(doc))(0)(1)
+        doc_vector :+= (tf*get_idf(term))
+      }
+      println(doc_vector)
+    }
+    doc_vectorList ::: doc_vector
+    0
   }
 }
 
