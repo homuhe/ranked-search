@@ -64,17 +64,19 @@ class QueryProcessor extends InvertedIndex {
     math.log(N/n_i)
   }
 
-  def get_cos(query: List[String]): Int = {
+  def get_cos(query: List[String]): List[Double]= {//Int = {
 
     var query_vector: List[Double] = Nil
 
     for (key <- invertedIndex.keySet) {
       if (query.contains(key)) {
+        println(key)
         query_vector :+= get_idf(key)
+        println(get_idf(key))
       }
       else query_vector :+= 0.0
     }
-    0
+    query_vector
   }
 
   def tfidf_vector(query: List[String], doc: List[String]): List[Int] = {
@@ -107,6 +109,7 @@ object RankedSearch {
 
     //3.2
     println(s"IDF-Score of 'sugar': ${r.get_idf("sugar")}")
+    println(r.get_cos("sugar".split(" ").toList))
 
   }
 
