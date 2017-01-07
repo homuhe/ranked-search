@@ -50,7 +50,7 @@ class QueryProcessor extends InvertedIndex {
 
   private val invertedIndex = inverted
 
-  def get_idf(term: String): Double = {
+  def get_idf(term: String): Float = {
     val map_values = invertedIndex.valuesIterator.toList.flatten
     val docs = mutable.HashSet[Int]()
 
@@ -61,22 +61,28 @@ class QueryProcessor extends InvertedIndex {
     val N = docs.size
     val n_i = invertedIndex(term).size
 
-    math.log(N/n_i)
+    math.log(N/n_i).toFloat
   }
 
-  def get_cos(query: List[String]): List[Double]= {//Int = {
+  def get_cos(query: List[String]): Int = {
 
-    var query_vector: List[Double] = Nil
+    var query_vector: List[Float] = Nil
 
     for (key <- invertedIndex.keySet) {
       if (query.contains(key)) {
-        println(key)
         query_vector :+= get_idf(key)
-        println(get_idf(key))
       }
-      else query_vector :+= 0.0
+      else query_vector :+= 0.toFloat
     }
-    query_vector
+
+    var query_docs: List[Int] = Nil
+    for (term <- query) {
+      for (arr <- invertedIndex(term)) {//TODO exception handling!
+        query_docs :+= arr(0)
+      }
+    }
+    println(query_docs)
+    0
   }
 
   def tfidf_vector(query: List[String], doc: List[String]): List[Int] = {
@@ -109,7 +115,7 @@ object RankedSearch {
 
     //3.2
     println(s"IDF-Score of 'sugar': ${r.get_idf("sugar")}")
-    println(r.get_cos("sugar".split(" ").toList))
+    println(r.get_cos("sugar sugar".split(" ").toList))
 
   }
 
