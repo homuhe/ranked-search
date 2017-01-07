@@ -66,13 +66,13 @@ class QueryProcessor extends InvertedIndex {
 
   def get_cos(query: List[String]): Int = {
 
-    val query_vector: List[Double] = Nil
+    var query_vector: List[Double] = Nil
 
     for (key <- invertedIndex.keySet) {
       if (query.contains(key)) {
-        get_idf(key) :: query_vector
+        query_vector :+= get_idf(key)
       }
-      else 0.0 :: query_vector
+      else query_vector :+= 0.0
     }
     0
   }
