@@ -88,7 +88,9 @@ class QueryProcessor extends InvertedIndex {
     //create doc vectors
     var doc_vectorList = Nil
     for (doc <- query_docs) {
-
+      for (term <- invertedIndex.keySet) {
+        invertedIndex(term)//MAGIC
+      }
     }
     0
   }
