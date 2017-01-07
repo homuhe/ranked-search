@@ -50,7 +50,7 @@ class QueryProcessor extends InvertedIndex {
 
   private val invertedIndex = inverted
 
-  def get_idf(term: String): Double = {
+  def get_idf(term: String): Float = {
     val map_values = invertedIndex.valuesIterator.toList.flatten
     val docs = mutable.HashSet[Int]()
 
@@ -61,23 +61,22 @@ class QueryProcessor extends InvertedIndex {
     val N = docs.size
     val n_i = invertedIndex(term).size
 
-    math.log(N/n_i)
+    math.log(N/n_i).toFloat
   }
 
   def get_cos(query: List[String]): Int = {
 
-    var query_vector: List[Double] = Nil
+    var query_vector: List[Float] = Nil
 
     for (key <- invertedIndex.keySet) {
       if (query.contains(key)) {
         query_vector :+= get_idf(key)
       }
-      else query_vector :+= 0.0
+      else query_vector :+= 0.toFloat
     }
 
     var query_docs: List[Int] = Nil
     for (term <- query) {
-      println(term)
       for (arr <- invertedIndex(term)) {//TODO exception handling!
         query_docs :+= arr(0)
       }
