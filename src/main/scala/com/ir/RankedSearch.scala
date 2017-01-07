@@ -75,13 +75,21 @@ class QueryProcessor extends InvertedIndex {
       else query_vector :+= 0.toFloat
     }
 
-    var query_docs: List[Int] = Nil
+    val query_docs = mutable.HashSet[Int]()
+
+    //computing query docs
     for (term <- query) {
       for (arr <- invertedIndex(term)) {//TODO exception handling!
-        query_docs :+= arr(0)
+        query_docs.add(arr(0))
       }
     }
     println(query_docs)
+
+    //create doc vectors
+    var doc_vectorList = Nil
+    for (doc <- query_docs) {
+
+    }
     0
   }
 
@@ -98,13 +106,6 @@ object RankedSearch {
     */
   def main(args: Array[String]): Unit = {
 
-    //val reuters = new InvertedIndex
-
-    //reuters.read("reuters-21578-index-snowball.txt")
-    //println(reuters.num_of_types)
-    //print(reuters.get_postingList("hillard"))
-
-    //use QueryProcessor same as InvertedIndex Class (as it is extended)
     val r = new QueryProcessor
 
     //3.1
