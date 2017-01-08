@@ -99,7 +99,7 @@ class QueryProcessor extends InvertedIndex {
 
       sum = Math.sqrt(sum)
 
-      norm_scores.put(docID, sum) //TODO ? Exception handling if docID not in norm_scores
+      norm_scores.put(docID, sum)
     }
   }
 
@@ -219,10 +219,19 @@ object RankedSearch {
 
       while (true) {
         val input = userinput()
-        input.foreach(term => println(s"idf($term) = ${reuters.get_idf(term)}"))
-        reuters.get_cos(input)
-        getTitles(titleMap, reuters.get_cos(input))
-                                    .foreach(entry => println(entry._1 + " (" + entry._2 + "): " + entry._3))
+
+        try {
+
+          input.foreach(term => println(s"idf($term) = ${reuters.get_idf(term)}"))
+          getTitles(titleMap, reuters.get_cos(input))
+            .foreach(entry => println(entry._1 + " (" + entry._2 + "): " + entry._3))
+
+        }
+        //no results due to no entry found
+        catch {case _: Throwable =>
+          print("- No results -")
+          sys.exit()
+        }
       }
     }
     else help()
@@ -241,7 +250,7 @@ object RankedSearch {
 
     //find matches
     queryResults.foreach(result => titleMatches :+= (result._1, result._2, titleMap(result._1)))
-    titleMatches.sortWith(_._2 > _._2)
+    titleMatches = titleMatches.sortWith(_._2 > _._2).take(5)
     titleMatches
   }
 
@@ -250,16 +259,10 @@ object RankedSearch {
     * Help function for correct usage
     */
   def help() = {
-    println("Help function")
+    println("Usage: ./query-index arg1 arg2")
+    println("\t\targ1: INPUT1 - inverted index file w/ frequencies")
+    println("\t\targ2: INPUT2 - text file with doc id - title mapping")
     sys.exit()
-  }
-
-  /**
-    * print method for a list of arrays
-    */
-  def print_array(result: List[Array[Int]]) = {
-    result.foreach(entry => print(entry.deep.mkString(" ") + "  "))
-    println()
   }
 
   def userinput() = {
