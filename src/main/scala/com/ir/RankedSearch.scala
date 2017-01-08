@@ -1,6 +1,6 @@
 package com.ir
 
-import scala.collection.{SortedMap, mutable}
+import scala.collection.mutable
 import scala.io.{Source, StdIn}
 
 /** Author:       Alexander Hartmann,
