@@ -65,25 +65,25 @@ class QueryProcessor extends InvertedIndex {
     doc_number = docs.size
   }
 
-  def get_idf(term: String): Float = {
+  def get_idf(term: String): Double = {
 
     val N = doc_number
     val n_i = invertedIndex(term).size
 
-    math.log(N/n_i).toFloat
+    math.log(N/n_i)
   }
 
-  def get_cos(query: List[String]): List[Float] = {
+  def get_cos(query: List[String]): List[Double] = {
 
-    var query_vector: List[Float] = Nil
+    var query_vector: List[Double] = Nil
 
     for(queryTerm <- query){
       if(invertedIndex.keySet.contains(queryTerm))
         query_vector :+= 1 * get_idf(queryTerm)
-      else query_vector :+= 0.toFloat
+      else query_vector :+= 0.toDouble
     }
 
-
+    //TODO Delete
     println()
     print("query vector of ->V(q) ");println(query)
     println("->V(q) " + query_vector)
@@ -91,23 +91,23 @@ class QueryProcessor extends InvertedIndex {
 
     //create doc vectors
     val doc_vectorList = Nil
-    val doc_vector: List[Float] = Nil
+    val doc_vector: List[Double] = Nil
 
-    val doc2Score = mutable.HashMap[Int, List[Float]]()
+    val doc2Score = mutable.HashMap[Int, List[Double]]()
     //fetching posting lists for t
     println(query.length)
     //    for(queryTerm <- query){
-    for(index <- query.indices){
+    for(index <- query.indices) {
       val queryTerm = query(index)
-      println(queryTerm + " occurrs in " + get_postingList(queryTerm).size + " documents.")
+      println(queryTerm + " occurs in " + get_postingList(queryTerm).size + " documents.") //TODO Delete
 
-      for(pair <- get_postingList(queryTerm)){
+      for(pair <- get_postingList(queryTerm)) {
         val doc_id = pair(0)
         val tf = pair(1)
         val tf_idf = tf * get_idf(queryTerm)
 
-        if(!doc2Score.contains(doc_id)){
-          var list: List[Float] = List.fill(query.length)(0)
+        if(!doc2Score.contains(doc_id)) {
+          var list: List[Double] = List.fill(query.length)(0)
           list = list.updated(index, tf_idf)
 
           doc2Score.put(doc_id, list)
@@ -120,20 +120,20 @@ class QueryProcessor extends InvertedIndex {
     //calculate cosine similarity
     var results =  Array[(Int, Double)]()
 
-    for((docid, scores) <- doc2Score){
+    for((docid, scores) <- doc2Score) {
       var dotproduct: Double = 0
-      for(idx <- scores.indices){
+      for(idx <- scores.indices) {
         dotproduct += scores(idx) * query_vector(idx)
-        //        println(query(idx))
+        //        println(query(idx)) //TODO Delete
         //        println("docid: " + docid + " doc_vector at "+ idx + ": " + scores(idx) + " query_vector at "
         //          + idx + ": "+ query_vector(idx) + " dotproduct: " + dotproduct)
       }
 
       var length_q: Double = 0
-      for(idx <- query_vector.indices){
+      for(idx <- query_vector.indices) {
         length_q += query_vector(idx) * query_vector(idx)
 //
-//        println(query(idx))
+//        println(query(idx)) //TODO Delete
 //        println("docid: " + docid + " query_vector at "
 //          + idx + ": "+ query_vector(idx) + " length_q: " + length_q)
       }
@@ -141,7 +141,7 @@ class QueryProcessor extends InvertedIndex {
 
 
       var length_d: Double = 0
-      for(idx <- scores.indices){
+      for(idx <- scores.indices) {
         length_d += scores(idx) * scores(idx)
       }
       length_d = Math.sqrt(length_d)
@@ -149,7 +149,7 @@ class QueryProcessor extends InvertedIndex {
       val length = length_q * length_d
 
       val cosineSimilarity = dotproduct/length
-//            println("doc_id : " + docid + " - cosineSimilarity: " + cosineSimilarity)
+//            println("doc_id : " + docid + " - cosineSimilarity: " + cosineSimilarity) //TODO Delete
 
 
       results :+= (docid, cosineSimilarity)
@@ -170,10 +170,14 @@ object RankedSearch {
     */
   def main(args: Array[String]): Unit = {
 
+    var file = ""
+    if (args.length != 1) help()
+    else file = args(0)
+
     val r = new QueryProcessor
 
     //3.1
-    r.read("reuters-21578-index-snowball.txt")
+    r.read(file)
     println(s"Number of terms: ${r.num_of_types}")
     print(s"Posting list of 'hillard': ")
     print_array(r.get_postingList("hillard"))
