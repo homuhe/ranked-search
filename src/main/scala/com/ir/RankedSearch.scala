@@ -1,5 +1,7 @@
 package com.ir
 
+import java.util
+
 import scala.collection.mutable
 import scala.io.Source
 
@@ -53,9 +55,44 @@ class QueryProcessor extends InvertedIndex {
 
   private val invertedIndex = inverted
   private var doc_number = 0
+  private val norm_scores = mutable.HashMap[Int, Double]()
 
 
-  def calculate_doc_num(): Unit = {
+  def calculate_doc_norms: Unit = {
+
+    val doc_norms = mutable.HashMap[Int, List[Double]]()
+
+    for((term,values) <- invertedIndex){
+      for(valuepair <- values){
+        val docid = valuepair(0)
+        val tf = valuepair(1)
+        // first of all compute the tf-idf and then square it
+        val tf_idf_squared = (tf * get_idf(term)) * (tf * get_idf(term))
+
+        if(!doc_norms.contains(docid)){
+          doc_norms.put(docid, List(tf_idf_squared))
+        }else{
+          doc_norms(docid) :+= tf_idf_squared
+        }
+      }
+    }
+
+    var sum: Double = 0.0
+    for((docid, values) <- doc_norms){
+
+      for(value <- values){
+        sum = sum + value
+      }
+      sum = Math.sqrt(sum)
+
+      if(!norm_scores.contains(docid)){
+        norm_scores.put(docid, sum)
+      }else println("DAS KANN NICHT SEIN!!")
+
+    }
+  }
+
+  def calculate_doc_num: Unit = {
     val map_values = inverted.valuesIterator.toList.flatten
     val docs = mutable.HashSet[Int]()
 
@@ -66,47 +103,73 @@ class QueryProcessor extends InvertedIndex {
   }
 
   def get_idf(term: String): Double = {
-
+    // das ist eigentlich alles was wir für get_idf benötigen!
+    // ansonsten würden wir den scheiss ja immer wiederholen?
     val N = doc_number
     val n_i = invertedIndex(term).size
 
     math.log(N/n_i)
   }
 
-  def get_cos(query: List[String]): List[Double] = {
+  def get_cos(query: List[String]): Int = {
 
     var query_vector: List[Double] = Nil
 
+    // du hattest die scheisse verkehrt rum! denke mein ansatz ist auch performanter^^
+    //    for (key <- invertedIndex.keySet) {
+    //      if (query.contains(key)) {
+    //        query_vector :+= get_idf(key)
+    //      }
+    //    }
     for(queryTerm <- query){
       if(invertedIndex.keySet.contains(queryTerm))
         query_vector :+= 1 * get_idf(queryTerm)
-      else query_vector :+= 0.toDouble
+      else query_vector :+= 0.0
     }
 
-    //TODO Delete
     println()
-    print("query vector of ->V(q) ");println(query)
+    print("query vector of ->V(q)");println(query)
     println("->V(q) " + query_vector)
     println()
 
+    val query_docs = mutable.HashSet[Int]()
+
+    //computing query docs
+    //    println("computing query docs: ")
+    //    for (term <- query) {
+    //      for (arr <- invertedIndex(term)) {//TODO exception handling!
+    //        query_docs.add(arr(0))
+    //      }
+    //    }
+    //    println(query_docs)
+
     //create doc vectors
     val doc_vectorList = Nil
-    val doc_vector: List[Double] = Nil
+    var doc_vector: List[Double] = Nil
+
+    //    for (doc <- query_docs) {
+    //      doc_vector = Nil
+    //      for (term <- invertedIndex.keySet) {
+    ////        val tf = invertedIndex(term).filter(arr => arr(0).equals(doc))(0)(1)
+    ////        doc_vector :+= (tf*get_idf(term))
+    //      }
+    //      println(doc_vector)
+    //    }
 
     val doc2Score = mutable.HashMap[Int, List[Double]]()
     //fetching posting lists for t
     println(query.length)
     //    for(queryTerm <- query){
-    for(index <- query.indices) {
+    for(index <- 0 until query.length){
       val queryTerm = query(index)
-      println(queryTerm + " occurs in " + get_postingList(queryTerm).size + " documents.") //TODO Delete
+      println(queryTerm + " occurrs in " + get_postingList(queryTerm).size + " documents.")
 
-      for(pair <- get_postingList(queryTerm)) {
+      for(pair <- get_postingList(queryTerm)){
         val doc_id = pair(0)
-        val tf = pair(1)
+        var tf = pair(1)
         val tf_idf = tf * get_idf(queryTerm)
 
-        if(!doc2Score.contains(doc_id)) {
+        if(!doc2Score.contains(doc_id)){
           var list: List[Double] = List.fill(query.length)(0)
           list = list.updated(index, tf_idf)
 
@@ -117,48 +180,61 @@ class QueryProcessor extends InvertedIndex {
       }
     }
 
+    //    for((docid,scores) <- doc2Score){
+    //      if(!doc2Score(docid).contains(0.0)) {
+    //        println("doc_id: " + docid + " - tf_idfs : " + scores)
+    //      }
+    //    }
+
     //calculate cosine similarity
     var results =  Array[(Int, Double)]()
 
-    for((docid, scores) <- doc2Score) {
+    for((docid, doc_vector) <- doc2Score){
       var dotproduct: Double = 0
-      for(idx <- scores.indices) {
-        dotproduct += scores(idx) * query_vector(idx)
-        //        println(query(idx)) //TODO Delete
+      for(idx <- 0 until doc_vector.length){
+        dotproduct += doc_vector(idx) * query_vector(idx)
+        println("docvector at " + idx + " : " + doc_vector(idx))
+        println("queryvector at " + idx + " : " + query_vector(idx))
+        //        println(query(idx))
         //        println("docid: " + docid + " doc_vector at "+ idx + ": " + scores(idx) + " query_vector at "
         //          + idx + ": "+ query_vector(idx) + " dotproduct: " + dotproduct)
       }
 
+      ////////////
       var length_q: Double = 0
-      for(idx <- query_vector.indices) {
+      for(idx <- 0 until query_vector.length){
         length_q += query_vector(idx) * query_vector(idx)
-//
-//        println(query(idx)) //TODO Delete
-//        println("docid: " + docid + " query_vector at "
-//          + idx + ": "+ query_vector(idx) + " length_q: " + length_q)
+
       }
       length_q = Math.sqrt(length_q)
 
 
       var length_d: Double = 0
-      for(idx <- scores.indices) {
-        length_d += scores(idx) * scores(idx)
-      }
-      length_d = Math.sqrt(length_d)
+//      for(idx <- 0 until doc_vector.length){
+//        length_d += doc_vector(idx) * doc_vector(idx)
+//      }
+//      length_d = Math.sqrt(length_d)
+      length_d = norm_scores(docid)
+
 
       val length = length_q * length_d
 
       val cosineSimilarity = dotproduct/length
-//            println("doc_id : " + docid + " - cosineSimilarity: " + cosineSimilarity) //TODO Delete
+//            println("doc_id : " + docid + " - cosineSimilarity: " + cosineSimilarity)
 
+      println("docid: " + docid)
+      println("dotproduct: " + dotproduct)
+      println("length: " + length)
 
       results :+= (docid, cosineSimilarity)
     }
     results = results.sortWith(_._2 > _._2)
     println(results.deep.mkString(" "))
+    //    println("->V(d) " + doc_vector)
 
     doc_vectorList ::: doc_vector
     //cosine calculation
+    0
   }
 }
 
@@ -170,14 +246,11 @@ object RankedSearch {
     */
   def main(args: Array[String]): Unit = {
 
-    var file = ""
-    if (args.length != 1) help()
-    else file = args(0)
-
     val r = new QueryProcessor
 
     //3.1
-    r.read(file)
+    r.read("reuters-21578-index-snowball.txt")
+//    r.read("reuters-21578-index")
     println(s"Number of terms: ${r.num_of_types}")
     print(s"Posting list of 'hillard': ")
     print_array(r.get_postingList("hillard"))
@@ -185,10 +258,12 @@ object RankedSearch {
 
 
     //3.2
-    r.calculate_doc_num()
+    r.calculate_doc_num
+    r.calculate_doc_norms
     println(s"IDF-Score of 'sugar': ${r.get_idf("sugar")}")
-    println(r.get_cos("sugar soviet".split(" ").toList))
+    println(r.get_cos("sugar".split(" ").toList))
     println()
+
 
   }
 
