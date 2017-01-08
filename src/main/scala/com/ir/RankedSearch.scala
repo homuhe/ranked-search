@@ -1,7 +1,7 @@
 package com.ir
 
-import scala.collection.mutable
-import scala.io.Source
+import scala.collection.{SortedMap, mutable}
+import scala.io.{Source, StdIn}
 
 /** Author:       Alexander Hartmann,
   *               Holger Muth-Hellebrandt
@@ -188,7 +188,7 @@ class QueryProcessor extends InvertedIndex {
   }
 }
 
-
+//3.3
 object RankedSearch {
 
   /**
@@ -196,26 +196,52 @@ object RankedSearch {
     */
   def main(args: Array[String]): Unit = {
 
-    val r = new QueryProcessor
+    val reuters = new QueryProcessor
 
-    //3.1
-    r.read("reuters-21578-index-snowball.txt")
-    println(s"Number of terms: ${r.num_of_terms}")
-    print(s"Posting list of 'hillard': ")
-    print_array(r.get_postingList("hillard"))
-    println()
+    var index = ""
 
+    //query with title mapping
+    if (args.length == 2) {
+      index = args(0)
+      val titles = args(1)
 
-    //3.2
-    r.num_of_docs()
-    r.calculate_doc_norms()
+      reuters.read(index)
+      reuters.num_of_docs()
+      reuters.calculate_doc_norms()
 
-    println(s"IDF-Score of 'sugar': ${r.get_idf("sugar")}")
-    println(r.get_cos("sugar".split(" ").toList).deep.mkString(" "))
-    println()
-
-
+      while (true) {
+        val input = userinput()
+        input.foreach(term => println(s"idf($term) = ${reuters.get_idf(term)}"))
+        getTitles(titles, reuters.get_cos(input)).foreach(entry => println(entry._1 + ": " + entry._2))
+      }
+    }
+    else help()
   }
+
+  /**
+    * Maps document identifiers to titles
+    * @param file mapping file with doc id -> title stored
+    * @param queryResults document identifiers
+    * @return Map of doc id -> title
+    */
+  def getTitles(file: String, queryResults: Array[(Int, Double)]) : SortedMap[(Int, Double), String] = {
+    var titleMap = mutable.HashMap[Int, String]()
+    var titleMatches = SortedMap[(Int, Double), String]()
+
+    val lines = Source.fromFile(file).getLines()
+
+    for (line <- lines) {
+      val doc_id = line.split("\t")(0).toInt
+      val title = line.split("\t")(1)
+
+      titleMap += doc_id -> title
+    }
+
+    //find matches
+    queryResults.foreach(result => titleMatches += (result._1, result._2) -> titleMap(result._1))
+    titleMatches
+  }
+
 
   /**
     * Help function for correct usage
@@ -231,5 +257,11 @@ object RankedSearch {
   def print_array(result: List[Array[Int]]) = {
     result.foreach(entry => print(entry.deep.mkString(" ") + "  "))
     println()
+  }
+
+  def userinput() = {
+    println()
+    print("ranked-search: ")
+    StdIn.readLine().split("\\s+").toList
   }
 }
