@@ -93,6 +93,8 @@ class QueryProcessor extends InvertedIndex {
     }
 
 
+    /// was soll der drecke???
+
     println()
     print("query vector of ->V(q)");println(query)
     println("->V(q) " + query_vector)
