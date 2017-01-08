@@ -183,7 +183,6 @@ class QueryProcessor extends InvertedIndex {
       val cosineSimilarity = dotproduct/length
       results :+= (docID, cosineSimilarity)
     }
-    results = results.sortWith(_._2 > _._2)
     results
   }
 }
@@ -209,10 +208,21 @@ object RankedSearch {
       reuters.num_of_docs()
       reuters.calculate_doc_norms()
 
+      //read in titles
+      var titleMap = mutable.HashMap[Int, String]()
+      val lines = Source.fromFile(titles).getLines()
+      for (line <- lines) {
+        val doc_id = line.split("\t")(0).toInt
+        val title = line.split("\t")(1)
+        titleMap += doc_id -> title
+      }
+
       while (true) {
         val input = userinput()
         input.foreach(term => println(s"idf($term) = ${reuters.get_idf(term)}"))
-        getTitles(titles, reuters.get_cos(input)).foreach(entry => println(entry._1 + ": " + entry._2))
+        reuters.get_cos(input)
+        getTitles(titleMap, reuters.get_cos(input))
+                                    .foreach(entry => println(entry._1 + " (" + entry._2 + "): " + entry._3))
       }
     }
     else help()
@@ -220,25 +230,18 @@ object RankedSearch {
 
   /**
     * Maps document identifiers to titles
-    * @param file mapping file with doc id -> title stored
+    * @param titleMap map with doc id -> title stored
     * @param queryResults document identifiers
-    * @return Map of doc id -> title
+    * @return Array consisting of DocID, cosine similarity, title
     */
-  def getTitles(file: String, queryResults: Array[(Int, Double)]) : SortedMap[(Int, Double), String] = {
-    var titleMap = mutable.HashMap[Int, String]()
-    var titleMatches = SortedMap[(Int, Double), String]()
+  def getTitles(titleMap: mutable.HashMap[Int, String],
+                queryResults: Array[(Int, Double)]): Array[(Int, Double, String)] = {
 
-    val lines = Source.fromFile(file).getLines()
-
-    for (line <- lines) {
-      val doc_id = line.split("\t")(0).toInt
-      val title = line.split("\t")(1)
-
-      titleMap += doc_id -> title
-    }
+    var titleMatches = Array[(Int, Double, String)]()
 
     //find matches
-    queryResults.foreach(result => titleMatches += (result._1, result._2) -> titleMap(result._1))
+    queryResults.foreach(result => titleMatches :+= (result._1, result._2, titleMap(result._1)))
+    titleMatches.sortWith(_._2 > _._2)
     titleMatches
   }
 
