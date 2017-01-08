@@ -31,7 +31,7 @@ class InvertedIndex {
                         .split("\\s+")
                         .map(element => element.toInt)
                         .sliding(2,2)
-                          .toList
+                        .toList
 
       inverted += term -> posting
     }
@@ -159,7 +159,7 @@ class QueryProcessor extends InvertedIndex {
           val list: List[Double] = List.fill(query.length)(0)
           doc2Score(doc_id) = list.updated(index, tf_idf)
         }
-        else doc2Score(doc_id).updated(index, tf_idf)
+        else doc2Score(doc_id) = doc2Score(doc_id).updated(index, tf_idf)
       }
     }
 
