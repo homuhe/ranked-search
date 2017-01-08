@@ -70,7 +70,8 @@ class QueryProcessor extends InvertedIndex {
 
 
   /**
-    * DESCRIPTION NEEDED! //TODO
+    * Normalizes the sum of TF-IDFs of a given document
+    *  which is used in the denominator of the cos sim calculation
     */
   def calculate_doc_norms(): Unit = {
 
@@ -137,7 +138,7 @@ class QueryProcessor extends InvertedIndex {
     var query_vector: List[Double] = Nil
 
     for(queryTerm <- query) {
-      if(invertedIndex.keySet.contains(queryTerm)) //TODO Exception handling if term not in index
+      if(invertedIndex.keySet.contains(queryTerm))
         query_vector :+= 1 * get_idf(queryTerm)
     }
 
